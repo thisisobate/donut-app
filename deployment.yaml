@@ -1,0 +1,36 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: donut-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: donut-app
+  template:
+    metadata:
+      labels:
+        app: donut-app
+    spec:
+      containers:
+        - name: donut-app
+          image: thisisobate/donut-app
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: donut-app
+  name: donut-app
+spec:
+  ports:
+    - name: default
+      port: 80
+      targetPort: 3000
+  selector:
+    app: donut-app
