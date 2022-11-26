@@ -6,7 +6,7 @@ OS=''
 ARCH=''
 MOUNT_VOLUME_LOCAL=''
 USE_TELEMETRY=
-OPEN_EDITOR=
+OPEN_EDITOR='code'
 ACTIVITY_REPORT_TYPE='INTERMEDIATE_CLOUD_TOUR_SCRIPT'
 EMOJIVOTO_NS='emojivoto'
 TOTAL_STEPS='7'
@@ -155,7 +155,7 @@ run_dev_container() {
     docker build -t donut-app .
 
     # run the dev container
-    docker run -dp 3000:3000 donut-app 
+    docker run -dp 3007:3007 donut-app 
 
     # upload image to dockerhub 
     docker tag donut-app thisisobate/donut-app
@@ -173,6 +173,9 @@ connect_to_k8s() {
     # echo "$demo_cluster_info" > ./emojivoto_k8s_context.yaml
     # export KUBECONFIG=./emojivoto_k8s_context.yaml
     # kubectl config set-context --current --namespace=emojivoto
+
+    export KUBECONFIG=./donut-gke-context.yaml
+    kubectl config set-context --current --namespace=default
     
 
     # create k8s cluster
@@ -193,8 +196,7 @@ connect_local_dev_env_to_remote() {
     telepresence list
     kubectl get svc donut-app --output yaml
     
-    telepresence intercept donut-app --service donut-app --port 3000:80 --env-file donut-app-intercept.env
-    docker run --env-file donut-app-intercept.env
+    telepresence intercept donut-app-deploy --port 8085:80 
 
     telOut=$?
     if [ $telOut != 0 ]; then

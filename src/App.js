@@ -38,10 +38,14 @@ function App() {
           {/* <button>view more</button> */}
         </section>
         {/* <section className="callToAction">
-          <p>Want to support the next gen of leaders with books?</p>
-          <button>Donate</button>
+          <p>Want to have a taste of donut?</p>
+          <button onClick={prompt('Feature coming soon!')}>Order Now</button>
         </section>
       */}
+      <section className="callToAction">
+          <p>Want to have a taste of donut?</p>
+          <button onClick={() =>  alert('Feature coming soon!')}>Order Now</button>
+        </section>
       </main>
       <footer>
         <div className="container">
