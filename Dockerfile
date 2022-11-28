@@ -5,4 +5,4 @@ WORKDIR /donut-app
 COPY . .
 RUN npm install
 CMD ["npm", "start"]
-EXPOSE 3007
+EXPOSE 3009

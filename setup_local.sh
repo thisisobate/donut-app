@@ -5,32 +5,10 @@ CONTAINER_ID=''
 OS=''
 ARCH=''
 MOUNT_VOLUME_LOCAL=''
-USE_TELEMETRY=
-OPEN_EDITOR='code'
-ACTIVITY_REPORT_TYPE='INTERMEDIATE_CLOUD_TOUR_SCRIPT'
-EMOJIVOTO_NS='emojivoto'
-TOTAL_STEPS='7'
+TOTAL_STEPS='5'
 SEGMENT=$1
 SYSTEMA_ENV=$2
 
-
-# use_telemetry() {
-#     USE_TELEMETRY=true
-# }
-
-# send_telemetry() {
-#     if [ $USE_TELEMETRY = true ]; then
-#         action=$1
-#         ambassador_cloud_url="https://auth.datawire.io"
-#         application_activities_url="${ambassador_cloud_url}/api/applicationactivities"
-#         curl -X POST \
-#           -H "X-Ambassador-API-Key: $AMBASSADOR_API_KEY" \
-#           -H "Content-Type: application/json" \
-#           -d '{"type": "'$ACTIVITY_REPORT_TYPE'", "extraProperties": {"action":"'"$action"'","os":"'"$OS"'","arch":"'"$ARCH"'","segment":"'"$SEGMENT"'"}}' \
-#           -s \
-#           $application_activities_url > /dev/null 2>&1
-#     fi
-# }
 
 display_step() {
     echo -n "*** Step $1/$TOTAL_STEPS: "
@@ -132,54 +110,30 @@ set_os_arch() {
     esac
 }
 
-# check_init_config() {
-#     display_step 2
-#     echo 'Checking for AMBASSADOR_API_KEY environment variable'
-#     if [[ -z "${AMBASSADOR_API_KEY}" ]]; then
-#         # you will need to set the AMBASSADOR_API_KEY via the command line
-#         # export AMBASSADOR_API_KEY='NTIyOWExZDktYTc5...'
-#         echo 'AMBASSADOR_API_KEY is not currently defined. Please set the environment variable in the shell e.g.'
-#         echo 'export AMBASSADOR_API_KEY=NTIyOWExZDktYTc5...'
-#         echo 'You can get an AMBASSADOR_API_KEY and free remote demo cluster by taking the tour of Ambassador Cloud at https://app.getambassador.io/cloud/welcome?tour=intermediate '
-#         echo 'During the tour be sure to copy the AMBASSADOR_API_KEY from the "docker run" command'
-#         exit
-#     fi
-# }
-
 run_dev_container() {
     display_step 3
     echo 'Configuring development container. This container encapsulates all the dependencies needed to run the emojivoto-web-app locally.'
     echo 'This may take a few moments to download and start.'
 
     # build docker image
-    docker build -t donut-app .
+    docker build -t donut-app-container .
 
     # run the dev container
-    docker run -dp 3007:3007 donut-app 
+    docker run -dp 3009:3009 donut-app-container 
 
     # upload image to dockerhub 
-    docker tag donut-app thisisobate/donut-app
-    docker push thisisobate/donut-app
+    docker tag donut-app-container thisisobate/donut-app-container
+    docker push thisisobate/donut-app-container
 }
 
 connect_to_k8s() {
     display_step 4
-    # echo 'Getting KUBECONFIG from demo cluster'
-    # demo_cluster_url="https://auth.datawire.io/api/democlusters/telepresence-demo/config"
-    # if [[ "$SYSTEMA_ENV" == "staging" ]]; then
-    #     demo_cluster_url="https://staging-auth.datawire.io/api/democlusters/telepresence-demo/config"
-    # fi
-    # demo_cluster_info=$(curl -H "X-Ambassador-API-Key:$AMBASSADOR_API_KEY" $demo_cluster_url -s)
-    # echo "$demo_cluster_info" > ./emojivoto_k8s_context.yaml
-    # export KUBECONFIG=./emojivoto_k8s_context.yaml
-    # kubectl config set-context --current --namespace=emojivoto
 
-    export KUBECONFIG=./donut-gke-context.yaml
-    kubectl config set-context --current --namespace=default
-    
+    # use config for docker desktop
+    export KUBECONFIG=~/.kube/config    
 
     # create k8s cluster
-    kubectl apply -f deployment.yaml
+    kubectl apply -f deployment_local.yaml
 
     # List services in k8s cluster
     echo "Listing services in cluster"
@@ -194,9 +148,9 @@ connect_local_dev_env_to_remote() {
     telepresence helm install
     telepresence connect
     telepresence list
-    kubectl get svc donut-app --output yaml
+    kubectl get svc donut-app-local --output yaml
     
-    telepresence intercept donut-app-deploy --port 8085:80 
+    telepresence intercept donut-app-local --port 3009:82 
 
     telOut=$?
     if [ $telOut != 0 ]; then
@@ -206,33 +160,21 @@ connect_local_dev_env_to_remote() {
     echo "interceptCreated"
 }
 
-open_editor() {
-    display_step 6
-    echo 'Opening editor'
-    # let the user see the output before opening the editor
-    sleep 2
-
-    # replace this line with your editor of choice, e.g. VS code, Intelli J
-    $OPEN_EDITOR src/app.js
-}
-
 display_instructions_to_user () {
     echo ''
     echo 'INSTRUCTIONS FOR DEVELOPMENT'
     echo '============================'
     echo 'To set the correct Kubernetes context on this shell, please execute:'
-    echo 'export KUBECONFIG=./emojivoto_k8s_context.yaml'
+    echo 'export KUBECONFIG=~/.kube/config'
 }
 
 
 has_cli
 set_os_arch
-check_init_config
 install_upgrade_telepresence
 run_dev_container
 connect_to_k8s
 connect_local_dev_env_to_remote
-open_editor
 display_instructions_to_user
 
 # happy coding!

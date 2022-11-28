@@ -44,7 +44,7 @@ function App() {
       */}
       <section className="callToAction">
           <p>Want to have a taste of donut?</p>
-          <button onClick={() =>  alert('Feature coming soon!')}>Order Now</button>
+          <button onClick={() =>  alert('Feature coming soon!')}>Order now!</button>
         </section>
       </main>
       <footer>
