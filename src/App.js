@@ -35,16 +35,10 @@ function App() {
               </div>
             </div>
           </div>
-          {/* <button>view more</button> */}
         </section>
-        {/* <section className="callToAction">
+        <section className="callToAction">
           <p>Want to have a taste of donut?</p>
-          <button onClick={prompt('Feature coming soon!')}>Order Now</button>
-        </section>
-      */}
-      <section className="callToAction">
-          <p>Want to have a taste of donut?</p>
-          <button onClick={() =>  alert('Feature coming soon!')}>Order now!</button>
+          <button>Order now!</button>
         </section>
       </main>
       <footer>
